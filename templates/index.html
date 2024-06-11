@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendance System</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h2 class="mt-5">Employee Attendance</h2>
+      <div class="form-group">
+        <label for="nomor">Nomor Induk:</label>
+        <input
+          type="text"
+          id="nomor"
+          class="form-control"
+          placeholder="Scan barcode or enter number"
+        />
+      </div>
+      <button id="submit" class="btn btn-primary">Submit</button>
+      <div id="result" class="mt-3"></div>
+      <a href="{{ url_for('create_karyawan') }}" class="btn btn-secondary mt-3"
+        >Tambah Data Karyawan</a
+      >
+      <h3 class="mt-5">Today's Attendance</h3>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Nomor Induk</th>
+            <th>Nama</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody id="attendanceTableBody">
+          {% for record in attendance_records %}
+          <tr>
+            <td>{{ record.nomor }}</td>
+            <td>{{ record.nama }}</td>
+            <td>{{ record.timestamp }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        function submitForm() {
+          var nomor = $("#nomor").val();
+
+          // Check if the employee is already in the table
+          if (
+            $("#attendanceTableBody").find('td:contains("' + nomor + '")')
+              .length > 0
+          ) {
+            $("#result").html(
+              '<div class="alert alert-warning">Employee already clocked in</div>'
+            );
+            $("#nomor").val(""); // Clear the input field
+            return;
+          }
+
+          $.ajax({
+            url: "/scan",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ nomor: nomor }),
+            success: function (response) {
+              $("#result").html(
+                '<div class="alert alert-success">' +
+                  response.message +
+                  "</div>"
+              );
+              $("#nomor").val(""); // Clear the input field
+
+              // Append the new attendance record to the table
+              var currentTime = new Date()
+                .toISOString()
+                .slice(0, 19)
+                .replace("T", " ");
+              $("#attendanceTableBody").prepend(`
+                            <tr>
+                                <td>${nomor}</td>
+                                <td>${response.nama}</td>
+                                <td>${currentTime}</td>
+                            </tr>
+                        `);
+            },
+            error: function (response) {
+              $("#result").html(
+                '<div class="alert alert-danger">' +
+                  response.responseJSON.message +
+                  "</div>"
+              );
+              $("#nomor").val(""); // Clear the input field
+            },
+          });
+        }
+
+        $("#submit").click(function () {
+          submitForm();
+        });
+
+        $("#nomor").keypress(function (event) {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            submitForm();
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

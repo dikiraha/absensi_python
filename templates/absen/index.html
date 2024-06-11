@@ -1,0 +1,124 @@
+<!-- templates/index.html -->
+{% extends 'layouts/main.html' %} {% block title %}Home{% endblock %} {% block
+content %}
+<div class="row">
+  <div class="col-lg-4 col-sm-12 pt-3">
+    <div class="card pt-3">
+      <h3 class="title text-center pt-3 fw-bolder text-white">SCAN DISINI</h3>
+      <div class="efficiency-sub-section text-center mb-2 p-3">
+        <form action="{{ url_for('absen_hadir') }}" method="post">
+          <input
+            type="text"
+            class="form-control"
+            name="card_number"
+            id="card_number"
+            required
+            autofocus
+          />
+          <button type="submit" class="btn btn-primary mt-3">Submit</button>
+        </form>
+        {% if session.error %}
+        <div class="alert alert-danger mt-2">{{ session.error }}</div>
+        {% elif session.warning %}
+        <div class="alert alert-warning mt-2">{{ session.warning }}</div>
+        {% elif session.success %}
+        <div class="alert alert-success mt-2">{{ session.success }}</div>
+        {% endif %}
+      </div>
+    </div>
+    <button
+      type="button"
+      class="btn btn-secondary mt-3"
+      id="absen_manual"
+      data-bs-toggle="modal"
+      data-bs-target="#absenManualModal"
+    >
+      Absen Manual
+    </button>
+  </div>
+
+  <div class="col-lg-8 col-sm-12 pt-3">
+    <div class="card pt-3">
+      <h3 class="title text-center pt-3 fw-bolder text-white mb-5">
+        DAFTAR HADIR ASAKAI MANAGER
+      </h3>
+      <div class="efficiency-sub-section text-center mb-2 p-3">
+        <table class="table table-bordered">
+          <thead class="text-center">
+            <th>NO</th>
+            <th>NAMA</th>
+            <th>NPK</th>
+            <th>DEPT / FUNGSI</th>
+            <th>WAKTU ABSEN</th>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal-onboarding modal fade animate__animated"
+  id="absenManualModal"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="modalFullTitle">Absen Manual</h4>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <form action="{{ url_for('absen_hadir') }}" method="POST">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-12">
+              <select
+                name="card_number"
+                id="absen_manual_card_number"
+                class="form-control absen_manual_select2"
+              >
+                <option value="">-- Pilih --</option>
+                {% for absen_master in absen_masters %}
+                <option value="{{ absen_master.card_number }}">
+                  {{ absen_master.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-outline-secondary waves-effect"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary waves-effect waves-light"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add your main page content here -->
+{% endblock %} {% block scripts %}
+<script>
+  // Optional JavaScript specific to this page
+</script>
+{% endblock %}
