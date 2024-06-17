@@ -1,0 +1,131 @@
+<!-- templates/index.html -->
+{% extends 'layouts/main.html' %} {% block title %}Home{% endblock %} {% block
+content %}
+<div class="row">
+  <div class="col-lg-5 col-sm-12 pt-3">
+    <div class="card pt-3">
+      <h3 class="title text-center pt-3 fw-bolder text-white">
+        TAMBAH DATA KARYAWAN
+      </h3>
+      <div class="efficiency-sub-section mb-2 p-3">
+        {% if success %}
+        <div class="alert alert-success">Karyawan berhasil ditambahkan!</div>
+        {% elif error %}
+        <div class="alert alert-danger">Error: {{ error }}</div>
+        {% endif %}
+        <form method="post" action="{{ url_for('create_karyawan') }}">
+          <div class="form-group">
+            <label for="nomor" class="mb-1">Nomor Induk Karyawan :</label>
+            <input
+              type="text"
+              class="form-control"
+              id="nomor"
+              name="nomor"
+              required
+              autofocus
+            />
+          </div>
+          <div class="form-group mt-3">
+            <label for="nama" class="mb-1">Nama Karyawan :</label>
+            <input
+              type="text"
+              class="form-control"
+              id="nama"
+              name="nama"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-success mt-3">Submit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7 col-sm-12 pt-3">
+    <div class="card pt-3">
+      <h3 class="title text-center pt-3 fw-bolder text-white">DATA KARYAWAN</h3>
+      <div class="efficiency-sub-section mb-2 p-3">
+        <table class="table table-bordered">
+          <thead class="text-center">
+            <tr>
+              <th style="width: 40px">No</th>
+              <th>NIK</th>
+              <th>Nama</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for index, record in enumerate(attendance_records, start=1) %}
+            <tr>
+              <td>{{ index }}</td>
+              <td>{{ record[0] }}</td>
+              <td>{{ record[1] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal-onboarding modal fade animate__animated"
+  id="absenManualModal"
+  tabindex="-1"
+  style="display: none"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="modalFullTitle">Absen Manual</h4>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <form action="{{ url_for('absen_hadir') }}" method="POST">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-12">
+              <select
+                name="card_number"
+                id="absen_manual_card_number"
+                class="form-control absen_manual_select2"
+              >
+                <option value="">-- Pilih --</option>
+                {% for absen_master in absen_masters %}
+                <option value="{{ absen_master.card_number }}">
+                  {{ absen_master.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-outline-secondary waves-effect"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary waves-effect waves-light"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  // Optional JavaScript specific to this page
+</script>
+{% endblock %}

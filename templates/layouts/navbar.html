@@ -1,0 +1,47 @@
+<aside
+  id="layout-menu"
+  class="layout-menu-horizontal menu-horizontal menu bg-menu-theme flex-grow-0"
+>
+  <div class="container-xxl d-flex h-100">
+    <ul class="menu-inner" style="margin-right: 0px !important">
+      <li class="menu-item {% if request.path == '/' %}active{% endif %}">
+        <a href="{{ url_for('index') }}" class="menu-link">
+          <i class="menu-icon tf-icons mdi mdi-chart-box"></i>
+          <div data-i18n="ABSENSI">ABSENSI</div>
+        </a>
+      </li>
+      <li
+        class="menu-item {% if request.path == '/create_karyawan' %}active{% endif %}"
+      >
+        <a href="{{ url_for('create_karyawan') }}" class="menu-link">
+          <i class="menu-icon tf-icons mdi mdi-view-dashboard"></i>
+          <div data-i18n="KARYAWAN">KARYAWAN</div>
+        </a>
+      </li>
+      {% set margin_left = '530px' if lines else '710px' %}
+      <li class="menu-item text-end" style="margin-left: {{ margin_left }}">
+        <button class="btn btn-secondary">
+          Now, {{ current_date }}
+          <span id="time" class="px-2"></span>
+        </button>
+      </li>
+    </ul>
+  </div>
+  <script>
+    function updateTime() {
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, "0");
+      const minutes = now.getMinutes().toString().padStart(2, "0");
+      const seconds = now.getSeconds().toString().padStart(2, "0");
+      const formattedTime = `${hours}:${minutes}:${seconds}`;
+      const timeElement = document.getElementById("time");
+      timeElement.textContent = formattedTime;
+    }
+
+    // Update the time every second
+    setInterval(updateTime, 1000);
+
+    // Initial call to display the time immediately
+    updateTime();
+  </script>
+</aside>

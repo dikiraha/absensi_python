@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}My Flask App{% endblock %}</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='assets/vendor/libs/node-waves/node-waves.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='assets/vendor/fonts/materialdesignicons.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='assets/vendor/css/rtl/core-dark.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='assets/vendor/css/rtl/theme-default-dark.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='assets/css/demo.css') }}"
+    />
+  </head>
+  <body>
+    <div
+      class="layout-wrapper layout-navbar-full layout-horizontal layout-without-menu"
+    >
+      <div class="layout-container">
+        {% include 'layouts/navbar.html' %}
+        <div class="flex-grow-1 container-p-y mx-3">
+          {% block content %}{% endblock %}
+        </div>
+        {% include 'layouts/footer.html' %}
+        <div class="content-backdrop fade"></div>
+      </div>
+    </div>
+    <script src="{{ url_for('static', filename='assets/vendor/libs/jquery/jquery.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
