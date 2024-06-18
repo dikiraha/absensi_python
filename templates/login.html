@@ -1,0 +1,48 @@
+<!-- templates/index.html -->
+{% extends 'layouts/main.html' %} {% block title %}LOGIN{% endblock %} {% block
+content %}
+<div class="card p-2">
+  <!-- Logo -->
+  <div class="app-brand justify-content-center mt-5">
+    <a href="{{ url_for('login') }}" class="app-brand-link gap-2">
+      <span class="app-brand-text demo text-heading fw-bold">LOGIN</span>
+    </a>
+  </div>
+  <!-- /Logo -->
+  {% with messages = get_flashed_messages(with_categories=true) %} {% if
+  messages %} {% for category, message in messages %}
+  <div style="margin-left: 1rem; margin-right: 1rem; margin-top: 1rem">
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+  </div>
+  {% endfor %} {% endif %} {% endwith %}
+  <div class="card-body">
+    <form method="post" action="{{ url_for('login') }}">
+      <label for="nik">NIK :</label>
+      <input
+        type="text"
+        class="form-control"
+        name="nik"
+        id="nik"
+        required
+        maxlength="6"
+      />
+      <br />
+      <label for="password">Password :</label>
+      <input
+        type="password"
+        class="form-control"
+        name="password"
+        id="password"
+        required
+      />
+      <br />
+      <input type="submit" class="btn btn-success btn-block" value="Login" />
+    </form>
+  </div>
+</div>
+
+{% endblock %} {% block scripts %}
+<script>
+  // Optional JavaScript specific to this page
+</script>
+{% endblock %}

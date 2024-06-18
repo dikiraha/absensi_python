@@ -1,0 +1,47 @@
+<!-- templates/index.html -->
+{% extends 'layouts/main.html' %} {% block title %}HADIR{% endblock %} {% block
+content %}
+<div class="row">
+  <div class="col-lg-12 col-sm-12 pt-3">
+    <div class="card pt-3">
+      <h3 class="title text-center pt-3 fw-bolder text-white mb-5">
+        LOG ABSENSI
+      </h3>
+      <div class="efficiency-sub-section text-center mb-2 p-3">
+        <table class="table table-bordered">
+          <thead class="text-center">
+            <th>NO</th>
+            <th>TANGGAL</th>
+            <th>NAMA</th>
+            <th>NPK</th>
+            <th>DEPTARTMENT</th>
+            <th>ABSEN MASUK</th>
+            <th>ABSEN PULANG</th>
+          </thead>
+          <tbody>
+            {% if attendance_records %} {% for record in attendance_records %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ record.date }}</td>
+              <td>{{ record.name }}</td>
+              <td>{{ record.nik }}</td>
+              <td>{{ record.department }}</td>
+              <td>{{ record.time_in }}</td>
+              <td>{{ record.time_out }}</td>
+            </tr>
+            {% endfor %} {% else %}
+            <tr>
+              <td colspan="7" class="text-center">Tidak ada data</td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  // Optional JavaScript specific to this page
+</script>
+{% endblock %}

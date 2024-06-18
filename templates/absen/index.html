@@ -1,55 +1,67 @@
 <!-- templates/index.html -->
-{% extends 'layouts/main.html' %} {% block title %}Home{% endblock %} {% block
-content %}
+{% extends 'layouts/main.html' %} {% block title %}ABSENSI{% endblock %} {%
+block content %}
 <div class="row">
   <div class="col-lg-4 col-sm-12 pt-3">
     <div class="card pt-3">
       <h3 class="title text-center pt-3 fw-bolder text-white">SCAN DISINI</h3>
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div id="alert-container" style="margin-left: 1rem; margin-right: 1rem">
+        <div id="alert" class="alert alert-{{ category }}">{{ message }}</div>
+      </div>
+      <script>
+        setTimeout(function () {
+          var alertElement = document.getElementById("alert");
+          alertElement.style.transition = "opacity 1s";
+          alertElement.style.opacity = 0;
+          setTimeout(function () {
+            alertElement.parentNode.remove();
+          }, 1000); // Menghapus elemen setelah efek fade out selesai (1 detik)
+        }, 2000); // Menunggu 2 detik sebelum memulai efek fade out
+      </script>
+      {% endfor %} {% endif %} {% endwith %}
+
       <div class="efficiency-sub-section text-center mb-2 p-3">
         <form action="{{ url_for('scan') }}" method="post">
+          <div class="d-flex justify-content-between mb-2">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="type"
+                id="masuk"
+                value="MASUK"
+                required
+              />
+              <label class="form-check-label" for="masuk">MASUK</label>
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="type"
+                id="pulang"
+                value="PULANG"
+                required
+              />
+              <label class="form-check-label" for="pulang">PULANG</label>
+            </div>
+          </div>
           <input
             type="text"
-            name="nomor"
-            id="nomor"
-            class="form-control"
+            name="id_card"
+            id="id_card"
+            class="form-control mt-3"
             placeholder="Scan barcode or enter number"
             required
             autofocus
           />
-          <button type="submit" class="btn btn-primary mt-3">Submit</button>
+          <button type="submit" class="btn btn-success mt-3">Submit</button>
         </form>
-        {% if session.error %}
-        <div class="alert alert-danger mt-2">{{ session.error }}</div>
-        {% elif session.warning %}
-        <div class="alert alert-warning mt-2">{{ session.warning }}</div>
-        {% elif session.success %}
-        <div class="alert alert-success mt-2">{{ session.success }}</div>
-        {% endif %}
       </div>
     </div>
-    <div class="d-flex justify-content-between">
-      <button
-        type="button"
-        class="btn btn-secondary mt-3"
-        id="absen_manual"
-        data-bs-toggle="modal"
-        data-bs-target="#absenManualModal"
-      >
-        Absen Manual
-      </button>
-      <a
-        href="{{ url_for('create_karyawan') }}"
-        type="button"
-        class="btn btn-primary mt-3"
-        id="absen_manual"
-        data-bs-toggle="modal"
-        data-bs-target="#absenManualModal"
-      >
-        Tambah Karyawan
-      </a>
-    </div>
   </div>
-
   <div class="col-lg-8 col-sm-12 pt-3">
     <div class="card pt-3">
       <h3 class="title text-center pt-3 fw-bolder text-white mb-5">
@@ -61,85 +73,48 @@ content %}
             <th>NO</th>
             <th>NAMA</th>
             <th>NPK</th>
-            <th>DEPT / FUNGSI</th>
-            <th>WAKTU ABSEN</th>
+            <th>DEPTARTMENT</th>
+            <th>ABSEN MASUK</th>
+            <th>ABSEN PULANG</th>
           </thead>
           <tbody>
-            {% for record in attendance_records %}
+            {% if attendance_records %} {% for record in attendance_records %}
             <tr>
-              <td>{{ record.id }}</td>
-              <td>{{ record.nama }}</td>
-              <td>{{ record.nomor }}</td>
-              <td>{{ record.a }}</td>
-              <td>{{ record.timestamp }}</td>
+              <td>{{ loop.index }}</td>
+              <td>{{ record.name }}</td>
+              <td>{{ record.nik }}</td>
+              <td>{{ record.department }}</td>
+              <td>{{ record.time_in }}</td>
+              <td>{{ record.time_out }}</td>
             </tr>
-            {% endfor %}
+            {% endfor %} {% else %}
+            <tr>
+              <td colspan="6" class="text-center">Tidak ada data</td>
+            </tr>
+            {% endif %}
           </tbody>
         </table>
       </div>
     </div>
   </div>
 </div>
-
-<div
-  class="modal-onboarding modal fade animate__animated"
-  id="absenManualModal"
-  tabindex="-1"
-  style="display: none"
-  aria-hidden="true"
->
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="modalFullTitle">Absen Manual</h4>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-
-      <form action="{{ url_for('absen_hadir') }}" method="POST">
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-12">
-              <select
-                name="card_number"
-                id="absen_manual_card_number"
-                class="form-control absen_manual_select2"
-              >
-                <option value="">-- Pilih --</option>
-                {% for absen_master in absen_masters %}
-                <option value="{{ absen_master.card_number }}">
-                  {{ absen_master.name }}
-                </option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-outline-secondary waves-effect"
-            data-bs-dismiss="modal"
-          >
-            Close
-          </button>
-          <button
-            type="submit"
-            class="btn btn-primary waves-effect waves-light"
-          >
-            Submit
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
 {% endblock %} {% block scripts %}
 <script>
-  // Optional JavaScript specific to this page
+  // Fungsi untuk mengatur fokus ke id_card
+  function autofocusIdCard() {
+    document.getElementById("id_card").focus();
+  }
+
+  // Mengatur fokus ke id_card saat dokumen dimuat
+  document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("id_card").focus();
+  });
+
+  // Mengatur fokus ke id_card saat ada klik di luar id_card
+  document.addEventListener("click", function (event) {
+    if (!event.target.closest("#id_card")) {
+      document.getElementById("id_card").focus();
+    }
+  });
 </script>
 {% endblock %}

@@ -1,6 +1,5 @@
-<!-- templates/index.html -->
-{% extends 'layouts/main.html' %} {% block title %}Home{% endblock %} {% block
-content %}
+{% extends 'layouts/main.html' %} {% block title %}KARYAWAN{% endblock %} {%
+block content %}
 <div class="row">
   <div class="col-lg-5 col-sm-12 pt-3">
     <div class="card pt-3">
@@ -8,30 +7,83 @@ content %}
         TAMBAH DATA KARYAWAN
       </h3>
       <div class="efficiency-sub-section mb-2 p-3">
-        {% if success %}
-        <div class="alert alert-success">Karyawan berhasil ditambahkan!</div>
-        {% elif error %}
-        <div class="alert alert-danger">Error: {{ error }}</div>
-        {% endif %}
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %} {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %} {% endif %} {% endwith %}
         <form method="post" action="{{ url_for('create_karyawan') }}">
           <div class="form-group">
-            <label for="nomor" class="mb-1">Nomor Induk Karyawan :</label>
+            <label for="id_card" class="mb-1">ID Card Karyawan :</label>
             <input
               type="text"
               class="form-control"
-              id="nomor"
-              name="nomor"
+              id="id_card"
+              name="id_card"
+              required
+              autofocus
+            />
+          </div>
+          <div class="form-group">
+            <label for="nik" class="mb-1">Nomor Induk Karyawan :</label>
+            <input
+              type="text"
+              class="form-control"
+              id="nik"
+              name="nik"
               required
               autofocus
             />
           </div>
           <div class="form-group mt-3">
-            <label for="nama" class="mb-1">Nama Karyawan :</label>
+            <label for="name" class="mb-1">Nama Karyawan :</label>
             <input
               type="text"
               class="form-control"
-              id="nama"
-              name="nama"
+              id="name"
+              name="name"
+              required
+            />
+          </div>
+          <div class="form-group mt-3">
+            <label for="jabatan_id" class="mb-1">Jabatan Karyawan :</label>
+            <select id="jabatan_id" name="jabatan_id" class="form-control">
+              <option value="">-- Pilih --</option>
+              {% for jabatan in jabatans %}
+              <option value="{{ jabatan[0] }}">{{ jabatan[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group mt-3">
+            <label for="department_id" class="mb-1"
+              >Department Karyawan :</label
+            >
+            <select
+              id="department_id"
+              name="department_id"
+              class="form-control"
+            >
+              <option value="">-- Pilih --</option>
+              {% for department in departments %}
+              <option value="{{ department[0] }}">{{ department[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group mt-3">
+            <label for="role_id" class="mb-1">Role Karyawan :</label>
+            <select id="role_id" name="role_id" class="form-control">
+              <option value="">-- Pilih --</option>
+              {% for role in roles %}
+              <option value="{{ role[0] }}">{{ role[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group mt-3">
+            <label for="password" class="mb-1">Password Login :</label>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              name="password"
               required
             />
           </div>
@@ -45,12 +97,16 @@ content %}
     <div class="card pt-3">
       <h3 class="title text-center pt-3 fw-bolder text-white">DATA KARYAWAN</h3>
       <div class="efficiency-sub-section mb-2 p-3">
-        <table class="table table-bordered">
+        <table class="table table-bordered table-responsive" id="app_table">
           <thead class="text-center">
             <tr>
               <th style="width: 40px">No</th>
               <th>NIK</th>
               <th>Nama</th>
+              <th>Jabatan</th>
+              <th>Department</th>
+              <th>Role</th>
+              <th>Option</th>
             </tr>
           </thead>
           <tbody>
@@ -59,6 +115,18 @@ content %}
               <td>{{ index }}</td>
               <td>{{ record[0] }}</td>
               <td>{{ record[1] }}</td>
+              <td>{{ record[2] }}</td>
+              <td>{{ record[3] }}</td>
+              <td>{{ record[4] }}</td>
+              <td>
+                <button
+                  type="button"
+                  class="btn btn-danger btn-sm delete-data"
+                  data-id="{{ record[0] }}"
+                >
+                  <i class="mdi mdi-delete"></i>
+                </button>
+              </td>
             </tr>
             {% endfor %}
           </tbody>
@@ -68,64 +136,98 @@ content %}
   </div>
 </div>
 
+<!-- Modal -->
 <div
-  class="modal-onboarding modal fade animate__animated"
-  id="absenManualModal"
+  class="modal fade"
+  id="confirmDeleteModal"
   tabindex="-1"
-  style="display: none"
+  role="dialog"
+  aria-labelledby="confirmDeleteModalLabel"
   aria-hidden="true"
 >
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title" id="modalFullTitle">Absen Manual</h4>
+        <h5 class="modal-title" id="confirmDeleteModalLabel">
+          Konfirmasi Hapus
+        </h5>
         <button
           type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
+          class="btn btn-secondary btn-sm"
+          data-dismiss="modal"
           aria-label="Close"
-        ></button>
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
-      <form action="{{ url_for('absen_hadir') }}" method="POST">
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-12">
-              <select
-                name="card_number"
-                id="absen_manual_card_number"
-                class="form-control absen_manual_select2"
-              >
-                <option value="">-- Pilih --</option>
-                {% for absen_master in absen_masters %}
-                <option value="{{ absen_master.card_number }}">
-                  {{ absen_master.name }}
-                </option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-outline-secondary waves-effect"
-            data-bs-dismiss="modal"
-          >
-            Close
-          </button>
-          <button
-            type="submit"
-            class="btn btn-primary waves-effect waves-light"
-          >
-            Submit
-          </button>
-        </div>
-      </form>
+      <div class="modal-body">
+        Apakah Anda yakin ingin menghapus data ini?
+        <input type="hidden" id="id_delete" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          Tidak
+        </button>
+        <button type="button" class="btn btn-danger" id="confirmDelete">
+          Ya
+        </button>
+      </div>
     </div>
   </div>
 </div>
 {% endblock %} {% block scripts %}
 <script>
-  // Optional JavaScript specific to this page
+  document.addEventListener("DOMContentLoaded", function () {
+    var deleteButtons = document.querySelectorAll(".delete-data");
+    var confirmDeleteModal = document.getElementById("confirmDeleteModal");
+    var confirmDeleteButton = document.getElementById("confirmDelete");
+    var deleteId;
+
+    deleteButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        deleteId = this.getAttribute("data-id");
+        $("#confirmDeleteModal").modal("show");
+      });
+    });
+
+    confirmDeleteButton.addEventListener("click", function () {
+      fetch(`/delete/${deleteId}`, {
+        method: "DELETE",
+      }).then((response) => {
+        if (response.ok) {
+          location.reload();
+        } else {
+          alert("Failed to delete the record.");
+        }
+      });
+    });
+  });
+</script>
+<script>
+  $(document).ready(function () {
+    $("#app_table").on("click", ".delete-data", function () {
+      var id_delete = $(this).data("id");
+      $("#id_delete").val(id_delete);
+    });
+
+    $("#confirmDelete").on("click", function () {
+      let id_delete = $("#id_delete").val();
+      $.ajax({
+        url: "/delete_karyawan",
+        type: "POST",
+        data: {
+          id: id_delete,
+        },
+        success: function (response) {
+          toastr["success"](response);
+          table.ajax.reload();
+          $("#deleteModal").modal("hide");
+        },
+        error: function (xhr, status, error) {
+          toastr["error"]("Error");
+        },
+      });
+    });
+  });
 </script>
 {% endblock %}

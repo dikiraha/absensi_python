@@ -3,13 +3,24 @@
   class="layout-menu-horizontal menu-horizontal menu bg-menu-theme flex-grow-0"
 >
   <div class="container-xxl d-flex h-100">
-    <ul class="menu-inner" style="margin-right: 0px !important">
+    <ul
+      class="menu-inner d-flex flex-grow-1"
+      style="margin-right: 0px !important"
+    >
       <li class="menu-item {% if request.path == '/' %}active{% endif %}">
         <a href="{{ url_for('index') }}" class="menu-link">
           <i class="menu-icon tf-icons mdi mdi-chart-box"></i>
           <div data-i18n="ABSENSI">ABSENSI</div>
         </a>
       </li>
+      {% if 'nik' in session %}
+      <li class="menu-item {% if request.path == '/hadir' %}active{% endif %}"">
+        <a href="{{ url_for('hadir') }}" class="menu-link">
+          <i class="menu-icon tf-icons mdi mdi-check"></i>
+          <div data-i18n="HADIR">HADIR</div>
+        </a>
+      </li>
+      {% if session['role_id'] == 1 %} {# Assuming role_id 1 is for admin #}
       <li
         class="menu-item {% if request.path == '/create_karyawan' %}active{% endif %}"
       >
@@ -18,15 +29,30 @@
           <div data-i18n="KARYAWAN">KARYAWAN</div>
         </a>
       </li>
-      {% set margin_left = '530px' if lines else '710px' %}
-      <li class="menu-item text-end" style="margin-left: {{ margin_left }}">
-        <button class="btn btn-secondary">
-          Now, {{ current_date }}
-          <span id="time" class="px-2"></span>
-        </button>
+      {% endif %}
+      <li class="menu-item">
+        <a href="{{ url_for('logout') }}" class="menu-link">
+          <i class="menu-icon tf-icons mdi mdi-logout"></i>
+          <div data-i18n="LOGOUT">{{ session['name'] }}, LOGOUT</div>
+        </a>
       </li>
+      {% else %}
+      <li class="menu-item {% if request.path == '/login' %}active{% endif %}">
+        <a href="{{ url_for('login') }}" class="menu-link">
+          <i class="menu-icon tf-icons mdi mdi-login"></i>
+          <div data-i18n="LOGIN">LOGIN</div>
+        </a>
+      </li>
+      {% endif %}
     </ul>
+    <div class="ml-auto mt-2">
+      <button class="btn btn-secondary">
+        Now, {{ current_date }}
+        <span id="time" class="px-2"></span>
+      </button>
+    </div>
   </div>
+
   <script>
     function updateTime() {
       const now = new Date();
