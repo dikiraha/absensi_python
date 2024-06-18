@@ -5,25 +5,13 @@ block content %}
   <div class="col-lg-4 col-sm-12 pt-3">
     <div class="card pt-3">
       <h3 class="title text-center pt-3 fw-bolder text-white">SCAN DISINI</h3>
-      {% with messages = get_flashed_messages(with_categories=true) %} {% if
-      messages %} {% for category, message in messages %}
-      <div id="alert-container" style="margin-left: 1rem; margin-right: 1rem">
-        <div id="alert" class="alert alert-{{ category }}">{{ message }}</div>
-      </div>
-      <script>
-        setTimeout(function () {
-          var alertElement = document.getElementById("alert");
-          alertElement.style.transition = "opacity 1s";
-          alertElement.style.opacity = 0;
-          setTimeout(function () {
-            alertElement.parentNode.remove();
-          }, 1000); // Menghapus elemen setelah efek fade out selesai (1 detik)
-        }, 2000); // Menunggu 2 detik sebelum memulai efek fade out
-      </script>
-      {% endfor %} {% endif %} {% endwith %}
+      <div
+        id="alert-container"
+        style="margin-left: 1rem; margin-right: 1rem"
+      ></div>
 
       <div class="efficiency-sub-section text-center mb-2 p-3">
-        <form action="{{ url_for('scan') }}" method="post">
+        <form id="scanForm">
           <div class="d-flex justify-content-between mb-2">
             <div class="form-check">
               <input
@@ -72,12 +60,12 @@ block content %}
           <thead class="text-center">
             <th>NO</th>
             <th>NAMA</th>
-            <th>NPK</th>
-            <th>DEPTARTMENT</th>
+            <th>NIK</th>
+            <th>DEPARTMENT</th>
             <th>ABSEN MASUK</th>
             <th>ABSEN PULANG</th>
           </thead>
-          <tbody>
+          <tbody id="attendanceTableBody">
             {% if attendance_records %} {% for record in attendance_records %}
             <tr>
               <td>{{ loop.index }}</td>
@@ -100,21 +88,90 @@ block content %}
 </div>
 {% endblock %} {% block scripts %}
 <script>
-  // Fungsi untuk mengatur fokus ke id_card
   function autofocusIdCard() {
     document.getElementById("id_card").focus();
   }
 
-  // Mengatur fokus ke id_card saat dokumen dimuat
   document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("id_card").focus();
   });
 
-  // Mengatur fokus ke id_card saat ada klik di luar id_card
   document.addEventListener("click", function (event) {
     if (!event.target.closest("#id_card")) {
       document.getElementById("id_card").focus();
     }
   });
+
+  document.getElementById("scanForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    var formData = new FormData(this);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", '{{ url_for("scan") }}', true);
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        var response = JSON.parse(xhr.responseText);
+        var alertContainer = document.getElementById("alert-container");
+
+        // Clear previous alerts
+        alertContainer.innerHTML = "";
+
+        // Display new alert
+        var alert = document.createElement("div");
+        alert.id = "alert";
+        alert.className =
+          "alert " + (response.success ? "alert-success" : "alert-danger");
+        alert.innerText = response.success ? "Absen berhasil" : response.error;
+        alertContainer.appendChild(alert);
+
+        setTimeout(function () {
+          alert.style.transition = "opacity 1s";
+          alert.style.opacity = 0;
+          setTimeout(function () {
+            alert.remove();
+          }, 1000); // Remove element after fade-out (1 second)
+        }, 2000); // Wait 2 seconds before starting fade-out
+
+        // Play audio based on type
+        if (response.success) {
+          if (response.type === "MASUK") {
+            new Audio("static/assets/audio/absen_masuk.mp3").play();
+          } else if (response.type === "PULANG") {
+            new Audio("static/assets/audio/absen_pulang.mp3").play();
+          }
+
+          // Clear the input field
+          document.getElementById("id_card").value = "";
+
+          // Update the table
+          updateAttendanceTable();
+        } else {
+          new Audio("static/assets/audio/absen_gagal.mp3").play();
+          document.getElementById("id_card").value = "";
+        }
+      } else {
+        var alertContainer = document.getElementById("alert-container");
+        alertContainer.innerHTML =
+          '<div class="alert alert-danger">An error occurred while submitting the form.</div>';
+        new Audio("static/assets/audio/absen_gagal.mp3").play();
+        document.getElementById("id_card").value = "";
+      }
+    };
+    xhr.send(formData);
+  });
+
+  function updateAttendanceTable() {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", '{{ url_for("index") }}', true);
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(xhr.responseText, "text/html");
+        var newTableBody = doc.getElementById("attendanceTableBody").innerHTML;
+        document.getElementById("attendanceTableBody").innerHTML = newTableBody;
+      }
+    };
+    xhr.send();
+  }
 </script>
 {% endblock %}

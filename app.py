@@ -94,15 +94,13 @@ def index():
 
     # Query to fetch today's attendance records with time_in and time_out
     cursor.execute("""
-        SELECT h.user_id, a.name, a.nik, 
-        (SELECT time FROM log_absens WHERE user_id = h.user_id AND type = 'MASUK' AND DATE(time) = %s ORDER BY time LIMIT 1) AS time_in,
-        (SELECT time FROM log_absens WHERE user_id = h.user_id AND type = 'PULANG' AND DATE(time) = %s ORDER BY time DESC LIMIT 1) AS time_out,
+        SELECT u.id, u.name, u.nik, 
+        (SELECT time FROM log_absens WHERE user_id = u.id AND type = 'MASUK' AND DATE(time) = %s ORDER BY time LIMIT 1) AS time_in,
+        (SELECT time FROM log_absens WHERE user_id = u.id AND type = 'PULANG' AND DATE(time) = %s ORDER BY time DESC LIMIT 1) AS time_out,
         d.name AS department
-        FROM log_absens h 
-        JOIN users a ON h.user_id = a.id 
-        JOIN departments d ON a.department_id = d.id
-        WHERE DATE(h.time) = %s AND h.time >= DATE_SUB(NOW(), INTERVAL 1 DAY) AND h.time < NOW()
-        GROUP BY h.user_id, DATE(h.time)
+        FROM users u 
+        JOIN departments d ON u.department_id = d.id
+        WHERE EXISTS (SELECT 1 FROM log_absens WHERE user_id = u.id AND DATE(time) = %s)
         ORDER BY time_out DESC
     """, (today, today, today,))
     attendance_records = cursor.fetchall()
@@ -122,13 +120,18 @@ def create_karyawan():
         password = request.form['password']
         hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
         cursor = db.cursor()
-
+        
         try:
-            cursor.execute("INSERT INTO users (id_card, nik, name, jabatan_id, department_id, role_id, password) VALUES (%s, %s, %s, %s, %s, %s, %s)", (id_card, nik, name, jabatan_id, department_id, role_id, hashed_password), cursor)
+            cursor.execute(
+                "INSERT INTO users (id_card, nik, name, jabatan_id, department_id, role_id, password) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                (id_card, nik, name, jabatan_id, department_id, role_id, hashed_password)
+            )
             db.commit()
             flash("Karyawan berhasil ditambahkan", "success")
         except mysql.connector.Error as err:
-            return redirect(url_for('create_karyawan', error=err.msg))
+            db.rollback()
+            flash(f"Error: {err.msg}", "danger")
+            return redirect(url_for('create_karyawan'))
 
     cursor = db.cursor()
 
@@ -173,7 +176,7 @@ def delete_karyawan():
 @app.route('/scan', methods=['POST'])
 def scan():
     id_card = request.form.get('id_card')
-    type = request.form.get('type')
+    type_ = request.form.get('type')
 
     cursor = db.cursor(dictionary=True)
 
@@ -184,13 +187,15 @@ def scan():
     if user_record:
         user_id = user_record['id']
 
-        cursor.execute("INSERT INTO log_absens (user_id, type) VALUES (%s, %s)", (user_id, type))
-        db.commit()
-        flash("Absen berhasil", "success")
+        try:
+            cursor.execute("INSERT INTO log_absens (user_id, type) VALUES (%s, %s)", (user_id, type_))
+            db.commit()
+            return jsonify(success=True, type=type_)
+        except Exception as e:
+            db.rollback()
+            return jsonify(success=False, error=str(e))
     else:
-        flash("Nomor tidak ditemukan", "danger")
-        
-    return redirect(url_for('index'))
+        return jsonify(success=False, error="Nomor tidak ditemukan")
 
 if __name__ == '__main__':
     app.run(debug=True)
