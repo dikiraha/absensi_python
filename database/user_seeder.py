@@ -13,8 +13,8 @@ db = mysql.connector.connect(
 cursor = db.cursor()
 
 # Define the username and password
-username = "diki"
-password = "diki"
+username = "admin"
+password = "admin"
 
 # Hash the password using bcrypt
 hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
